@@ -24,10 +24,13 @@ namespace WebApplication1
         }
 
         public IConfiguration Configuration { get; }
+        private FacebookService _facebookService;
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            _facebookService = Configuration.GetSection("Facebook").Get<FacebookService>();
+
             services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
             services.AddIdentity<IdentityUser, IdentityRole>().AddEntityFrameworkStores<ApplicationDbContext>().AddDefaultTokenProviders();
             services.AddTransient<IEmailSender, MailJetEmailSender>();
@@ -41,8 +44,8 @@ namespace WebApplication1
             });
             services.AddAuthentication().AddFacebook(options =>
             {
-                options.AppId = "654982106132772";
-                options.AppSecret = "ce374e6469ad8b973319893fd7ae3e16";
+                options.AppId = _facebookService.ApiKey;
+                options.AppSecret = _facebookService.SecretKey;
             });
 
             services.AddControllersWithViews();
