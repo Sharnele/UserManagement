@@ -11,6 +11,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using WebApplication1.Services;
+using Microsoft.AspNetCore.Identity.UI.Services;
 
 namespace WebApplication1
 {
@@ -27,7 +29,8 @@ namespace WebApplication1
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
-            services.AddIdentity<IdentityUser, IdentityRole>().AddEntityFrameworkStores<ApplicationDbContext>();
+            services.AddIdentity<IdentityUser, IdentityRole>().AddEntityFrameworkStores<ApplicationDbContext>().AddDefaultTokenProviders();
+            services.AddTransient<IEmailSender, MailJetEmailSender>();
             services.Configure<IdentityOptions>(opt =>
             {
                 opt.Password.RequiredLength = 5;
