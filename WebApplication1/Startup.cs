@@ -39,6 +39,12 @@ namespace WebApplication1
                 opt.Lockout.MaxFailedAccessAttempts = 2;
 
             });
+            services.AddAuthentication().AddFacebook(options =>
+            {
+                options.AppId = "654982106132772";
+                options.AppSecret = "ce374e6469ad8b973319893fd7ae3e16";
+            });
+
             services.AddControllersWithViews();
         }
 
