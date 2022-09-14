@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.VisualBasic;
 using System.Security.Claims;
+using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using WebApplication1.Data;
 using WebApplication1.Models;
@@ -14,11 +15,13 @@ namespace WebApplication1.Controllers
         private readonly UserManager<IdentityUser> _userManager;
         private readonly SignInManager<IdentityUser> _signInManager;
         private readonly IEmailSender _emailSender;
-        public AccountController(UserManager<IdentityUser> userManager, SignInManager<IdentityUser> signInManager, IEmailSender emailSender)
+        private readonly UrlEncoder _urlEncoder;
+        public AccountController(UserManager<IdentityUser> userManager, SignInManager<IdentityUser> signInManager, IEmailSender emailSender, UrlEncoder urlEncoder)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _emailSender = emailSender;
+            _urlEncoder = urlEncoder;
         }
 
         public IActionResult Index()
@@ -84,6 +87,10 @@ namespace WebApplication1.Controllers
                 if (result.Succeeded)
                 {
                     return LocalRedirect(returnUrl);
+                }
+                if (result.RequiresTwoFactor)
+                {
+                    return RedirectToAction(nameof(VerifyAuthenticatorCode), new { returnUrl = returnUrl , RememberMe = model.RememberMe});
                 }
                 if (result.IsLockedOut)
                 {
@@ -174,7 +181,9 @@ namespace WebApplication1.Controllers
         [HttpGet]
         public async Task<IActionResult> ExternalLoginCallback(string returnUrl = null, string remoteError = null)
         {
-            if(remoteError != null)
+            returnUrl = returnUrl ?? Url.Content("~/");
+
+            if (remoteError != null)
             {
                 ModelState.AddModelError(string.Empty, $"Error from external provider:{remoteError}");
                 return View(nameof(Login));
@@ -194,6 +203,10 @@ namespace WebApplication1.Controllers
                 //update any authentication token
                 await _signInManager.UpdateExternalAuthenticationTokensAsync(info);
                 return LocalRedirect(returnUrl);
+            }
+            if (result.RequiresTwoFactor)
+            {
+                return RedirectToAction("VerifyAuthenticatorCode", new { returnUrl = returnUrl });
             }
             else
             {
@@ -271,7 +284,99 @@ namespace WebApplication1.Controllers
             return View();
         }
 
-       
+        [HttpGet]
+        public async Task<IActionResult> EnableAuthenticator()
+        {
+            string AuthenticatorUriFormat = "otpauth://totp/{0}:{1}?secret={2}&issuer={0}&digits=6";
+
+            var user = await _userManager.GetUserAsync(User);
+            await _userManager.ResetAuthenticatorKeyAsync(user);
+            var token = await _userManager.GetAuthenticatorKeyAsync(user);
+
+            string AuthenticatorUri = string.Format(AuthenticatorUriFormat, _urlEncoder.Encode("identityManager"), _urlEncoder.Encode(user.Email), token);
+
+            var model = new TwoFactorAuthenticationViewModel() { Token = token, QRCodeUrl = AuthenticatorUri};
+            return View(model);
+
+        }
+
+
+        [HttpPost]
+        public async Task<IActionResult> EnableAuthenticator(TwoFactorAuthenticationViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                var user = await _userManager.GetUserAsync(User);
+                var succeeded = await _userManager.VerifyTwoFactorTokenAsync(user, _userManager.Options.Tokens.AuthenticatorTokenProvider, model.Code);
+                if (succeeded)
+                {
+                    await _userManager.SetTwoFactorEnabledAsync(user, true);
+                }
+                else
+                {
+                    ModelState.AddModelError("Verifify", "Your two factor auth code could not be avalidated");
+                    return View(model);
+                }
+            }
+
+            return RedirectToAction(nameof(AuthenticatorConfirmation));
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> RemoveAuthenticator()
+        {
+
+            var user = await _userManager.GetUserAsync(User);
+            await _userManager.ResetAuthenticatorKeyAsync(user);
+            await _userManager.SetTwoFactorEnabledAsync(user, false);
+
+            return RedirectToAction(nameof(Index),"Home");
+
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> VerifyAuthenticatorCode(bool rememberMe, string returnUrl = null)
+        {
+            var user = await _signInManager.GetTwoFactorAuthenticationUserAsync();
+            if (user == null)
+            {
+                return View("Error");
+            }
+            ViewData["ReturnUrl"] = returnUrl;
+            return View(new VerifyAuthenticatorViewModel { ReturnUrl = returnUrl, RememberMe = rememberMe });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> VerifyAuthenticatorCode(VerifyAuthenticatorViewModel model)
+        {
+            model.ReturnUrl = model.ReturnUrl ?? Url.Content("~/");
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            var result = await _signInManager.TwoFactorAuthenticatorSignInAsync(model.Code, model.RememberMe, rememberClient: true);
+            if (result.Succeeded)
+            {
+                return LocalRedirect(model.ReturnUrl);
+            }
+            if (result.IsLockedOut)
+            {
+                return View("Lockout");
+            }
+            else
+            {
+                ModelState.AddModelError(string.Empty, "Invalid Code");
+                return View(model);
+
+            }
+        }
+        public IActionResult AuthenticatorConfirmation()
+        {
+            return View();
+        }
+
         private void AddErrors(IdentityResult result)
         {
             foreach(var error in result.Errors)
