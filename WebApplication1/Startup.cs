@@ -42,6 +42,11 @@ namespace WebApplication1
                 opt.Lockout.MaxFailedAccessAttempts = 2;
 
             });
+            services.ConfigureApplicationCookie(opt =>
+            {
+                opt.AccessDeniedPath = new Microsoft.AspNetCore.Http.PathString("/Home/Accessdenied");
+            });
+
             services.AddAuthentication().AddFacebook(options =>
             {
                 options.AppId = _facebookService.ApiKey;
