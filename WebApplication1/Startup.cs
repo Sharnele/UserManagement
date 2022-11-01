@@ -13,6 +13,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using WebApplication1.Services;
 using Microsoft.AspNetCore.Identity.UI.Services;
+using WebApplication1.Data;
 
 namespace WebApplication1
 {
@@ -31,8 +32,8 @@ namespace WebApplication1
         {
             _facebookService = Configuration.GetSection("Facebook").Get<FacebookService>();
 
-            services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
-            services.AddIdentity<IdentityUser, IdentityRole>().AddEntityFrameworkStores<ApplicationDbContext>().AddDefaultTokenProviders();
+            services.AddDbContext<LoContext>(options => options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
+            services.AddIdentity<IdentityUser, IdentityRole>().AddEntityFrameworkStores<LoContext>().AddDefaultTokenProviders();
             services.AddTransient<IEmailSender, MailJetEmailSender>();
             services.Configure<IdentityOptions>(opt =>
             {

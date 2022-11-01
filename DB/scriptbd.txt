@@ -1,0 +1,31 @@
+ drop table  if exists Periode
+ 
+create table Periode(
+	Id int not null primary key,
+	Nom varchar(30) 
+    
+	);
+
+create table Mois(
+	Id int not null primary key,
+	mois varchar(30) ,
+    annees varchar(30),
+	idperiode int  ,
+    constraint Mois_Periode foreign key (idperiode) References Periode(Id)
+	);
+
+create table Revenu(
+	Id int not null primary key,
+	idmois int,
+    montant varchar(30),
+	prix int  ,
+   foreign key (idmois) References Mois(Id)
+	);
+
+create table Depense(
+	Id int not null primary key,
+	idmois int,
+    montant varchar(30),
+	prix int  ,
+   foreign key (idmois) References Mois(Id)
+	);

@@ -28,6 +28,7 @@ namespace WebApplication1.Controllers
             _emailSender = emailSender;
             _urlEncoder = urlEncoder;
             _roleManager = roleManager;
+            
         }
 
         public IActionResult Index()
