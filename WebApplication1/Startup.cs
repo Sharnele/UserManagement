@@ -32,8 +32,8 @@ namespace WebApplication1
         {
             _facebookService = Configuration.GetSection("Facebook").Get<FacebookService>();
 
-            services.AddDbContext<LoContext>(options => options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
-            services.AddIdentity<IdentityUser, IdentityRole>().AddEntityFrameworkStores<LoContext>().AddDefaultTokenProviders();
+            services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
+            services.AddIdentity<IdentityUser, IdentityRole>().AddEntityFrameworkStores<ApplicationDbContext>().AddDefaultTokenProviders();
             services.AddTransient<IEmailSender, MailJetEmailSender>();
             services.Configure<IdentityOptions>(opt =>
             {

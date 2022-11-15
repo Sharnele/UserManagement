@@ -12,7 +12,8 @@ namespace LoginApp.Data
 
         }
 
-        DbSet<ApplicationUser> ApplicationUser { set; get; }
+        public virtual DbSet<ApplicationUser> ApplicationUser { set; get; }
+        public virtual DbSet<Periode> Periode { set; get; }
 
 
     }

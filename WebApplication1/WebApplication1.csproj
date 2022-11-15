@@ -27,6 +27,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="dat\" />
     <Folder Include="Properties\" />
   </ItemGroup>
 

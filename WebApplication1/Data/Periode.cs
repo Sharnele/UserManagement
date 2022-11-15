@@ -9,14 +9,11 @@ namespace WebApplication1.Data
 {
     public partial class Periode
     {
-        public Periode()
-        {
-            Mois = new HashSet<Mois>();
-        }
+       
 
         public int Id { get; set; }
         public string Nom { get; set; }
 
-        public virtual ICollection<Mois> Mois { get; set; }
+      
     }
 }

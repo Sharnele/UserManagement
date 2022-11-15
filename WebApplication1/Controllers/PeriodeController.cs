@@ -5,19 +5,20 @@ using WebApplication1.Data;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
+using LoginApp.Data;
 
 namespace WebApplication1.Controllers
 {
     public class PeriodeController : Controller
     {
-        private readonly LoContext locontext;
+        private readonly ApplicationDbContext locontext;
 
-        public PeriodeController(LoContext locontext)
+        public PeriodeController(ApplicationDbContext locontext)
         {
             this.locontext = locontext;
         }
 
-        // affiche la liste des cours de la base de donnees
+        // affiche la liste des periodes de la base de donnees
         [HttpGet]
         public async Task<IActionResult> Index()
         {
@@ -37,13 +38,13 @@ namespace WebApplication1.Controllers
 
 
         }
-        // ajouter un cour dans la base de donnees
+        // ajouter une periode dans la base de donnees
         [HttpPost]
         public async Task<IActionResult> Add(Periode addperiodesrequest)
         {
             var periode = new Periode();
             {
-              //  periode.Id = addperiodesrequest.Id();
+                //  periode.Id = addperiodesrequest.Id();
                 periode.Nom = addperiodesrequest.Nom;
 
             }
@@ -55,7 +56,7 @@ namespace WebApplication1.Controllers
 
 
         }
-        // recuperer l'id afin de selection  l'enregistrement a modifier
+        // recuperer l'id afin de selectionner  l'enregistrement a modifier
         [HttpGet]
         public async Task<IActionResult> Edit(int id)
         {
@@ -68,7 +69,7 @@ namespace WebApplication1.Controllers
                     Nom = periode.Nom
                 };
 
-                return await Task.Run(() => View("View", viewmodel));
+                return await Task.Run(() => View("Edit", viewmodel));
             }
             return RedirectToAction("Index");
         }
@@ -90,8 +91,26 @@ namespace WebApplication1.Controllers
             return RedirectToAction("Index");
         }
 
-        [HttpPost]
 
+        // recuperer l'id afin de selectionner  l'enregistrement à supprimer
+        [HttpGet]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var periode = await locontext.Periode.FirstOrDefaultAsync(x => x.Id == id);
+            if (periode != null)
+            {
+                var viewmodel = new Periode()
+                {
+                    Id = periode.Id,
+                    Nom = periode.Nom
+                };
+
+                return await Task.Run(() => View("Delete", viewmodel));
+            }
+            return RedirectToAction("Index");
+        }
+        [HttpPost]
+        //supprimer l'enregistrement
         public async Task<IActionResult> Delete(Periode model)
         {
             var periode = await locontext.Periode.FindAsync(model.Id);
@@ -108,6 +127,24 @@ namespace WebApplication1.Controllers
 
         }
 
+
+        // recuperer l'id afin de selectionner  pour afficher les details de l'enregistrement
+        [HttpGet]
+        public async Task<IActionResult> Details(int id)
+        {
+            var periode = await locontext.Periode.FirstOrDefaultAsync(x => x.Id == id);
+            if (periode != null)
+            {
+                var viewmodel = new Periode()
+                {
+                    Id = periode.Id,
+                    Nom = periode.Nom
+                };
+
+                return await Task.Run(() => View("Details", viewmodel));
+            }
+            return RedirectToAction("Index");
+        }
     }
 }
 
