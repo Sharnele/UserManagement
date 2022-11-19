@@ -11,18 +11,18 @@ namespace WebApplication1.Controllers
 {
     public class PeriodeController : Controller
     {
-        private readonly ApplicationDbContext locontext;
+        private readonly ApplicationDbContext _dbContext;
 
-        public PeriodeController(ApplicationDbContext locontext)
+        public PeriodeController(ApplicationDbContext dbContext)
         {
-            this.locontext = locontext;
+            _dbContext = dbContext;
         }
 
         // affiche la liste des periodes de la base de donnees
         [HttpGet]
         public async Task<IActionResult> Index()
         {
-            List<Periode> periodes = locontext.Periode.ToList();
+            List<Periode> periodes = _dbContext.Periode.ToList();
             return View(periodes);
 
 
@@ -49,8 +49,8 @@ namespace WebApplication1.Controllers
 
             }
 
-            await locontext.Periode.AddAsync(periode);
-            await locontext.SaveChangesAsync();
+            await _dbContext.Periode.AddAsync(periode);
+            await _dbContext.SaveChangesAsync();
             return RedirectToAction("Index");
 
 
@@ -60,7 +60,7 @@ namespace WebApplication1.Controllers
         [HttpGet]
         public async Task<IActionResult> Edit(int id)
         {
-            var periode = await locontext.Periode.FirstOrDefaultAsync(x => x.Id == id);
+            var periode = await _dbContext.Periode.FirstOrDefaultAsync(x => x.Id == id);
             if (periode != null)
             {
                 var viewmodel = new Periode()
@@ -78,13 +78,13 @@ namespace WebApplication1.Controllers
         [HttpPost]
         public async Task<IActionResult> Edit(Periode model)
         {
-            var periode = await locontext.Periode.FindAsync(model.Id);
+            var periode = await _dbContext.Periode.FindAsync(model.Id);
             if (periode != null)
             {
                 periode.Id = model.Id;
                 periode.Nom = model.Nom;
 
-                await locontext.SaveChangesAsync();
+                await _dbContext.SaveChangesAsync();
                 return RedirectToAction("Index");
 
             }
@@ -96,7 +96,7 @@ namespace WebApplication1.Controllers
         [HttpGet]
         public async Task<IActionResult> Delete(int id)
         {
-            var periode = await locontext.Periode.FirstOrDefaultAsync(x => x.Id == id);
+            var periode = await _dbContext.Periode.FirstOrDefaultAsync(x => x.Id == id);
             if (periode != null)
             {
                 var viewmodel = new Periode()
@@ -113,11 +113,11 @@ namespace WebApplication1.Controllers
         //supprimer l'enregistrement
         public async Task<IActionResult> Delete(Periode model)
         {
-            var periode = await locontext.Periode.FindAsync(model.Id);
+            var periode = await _dbContext.Periode.FindAsync(model.Id);
             if (periode != null)
             {
-                locontext.Periode.Remove(periode);
-                await locontext.SaveChangesAsync();
+                _dbContext.Periode.Remove(periode);
+                await _dbContext.SaveChangesAsync();
                 return RedirectToAction("Index");
             }
 
@@ -132,7 +132,7 @@ namespace WebApplication1.Controllers
         [HttpGet]
         public async Task<IActionResult> Details(int id)
         {
-            var periode = await locontext.Periode.FirstOrDefaultAsync(x => x.Id == id);
+            var periode = await _dbContext.Periode.FirstOrDefaultAsync(x => x.Id == id);
             if (periode != null)
             {
                 var viewmodel = new Periode()
