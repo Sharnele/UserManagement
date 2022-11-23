@@ -2,10 +2,11 @@
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using WebApplication1.Data;
+using WebApplication1.Data.Context;
 
-namespace LoginApp.Data
+namespace LoginApp.Data.Context
 {
-    public class ApplicationDbContext : IdentityDbContext
+    public class ApplicationDbContext : IdentityDbContext, IApplicationDbContext
     {
 
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
@@ -13,8 +14,8 @@ namespace LoginApp.Data
 
         }
 
-        DbSet<ApplicationUser> ApplicationUser { set; get; }
-        DbSet<Periode> Periode { set; get; }
+        public DbSet<ApplicationUser> ApplicationUser { get; set; }
+        public DbSet<Periode> Periode { get; set ; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

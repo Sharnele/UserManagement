@@ -38,7 +38,7 @@ namespace WebApplication1.Controllers
         [HttpGet]
         [AllowAnonymous]
         public async Task<IActionResult> Register(string returnUrl = null)
-        {
+        {         
             if(! await _roleManager.RoleExistsAsync("Admin"))
             {
                 //Create Roles
